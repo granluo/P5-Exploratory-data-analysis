@@ -1,4 +1,4 @@
-Exploratory of White Wine Quantity by Zongran Luo
+White Wine Quality Exploratory Data Analysis by Zongran Luo
 ========================================================
 
 > **Tip**: You will see quoted sections like this throughout the template to
@@ -28,12 +28,34 @@ library(ggplot2)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
+df <- read.csv("https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityWhites.csv")
+
 
 ```
 
 > **Tip**: Before you create any plots, it is a good idea to provide a short
 introduction into the dataset that you are planning to explore. Replace this
 quoted text with that general information!
+
+The dataset we are going to dig is publicly available for research. The details 
+are described in the following:
+
+P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. 
+Modeling wine preferences by data mining from physicochemical properties.
+In Decision Support Systems, Elsevier, 47(4):547-553. ISSN: 0167-9236.
+
+This dataset has 13 variables with 4898 observatons. This dataset mainly covered 
+properties of white wines, including index variables, qualities, density and
+10 other properties.
+
+The goal of this project is to understand and analyze this dataset. In particular, 
+I will try to find answers of the following three questions:
+
+* Find the typical range and distributino of properties and qualities of wines.
+* Find the properties that most influence qualities of wines.
+* Find relationships between properties and find out if any correlations exist 
+between qualities and properties.
+
 
 # Univariate Plots Section
 
@@ -45,8 +67,30 @@ There should be multiple code chunks and text sections; the first one below is
 just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
+str(df)
+summary(df)
+```
+
+Our dataset consists of 13 variables, with 4898 observations.
+
+```{r echo=FALSE, Univariate_Plots_each_variable}
+names(df)
+
+for (name in names(df)[2:length(names(df))]){
+  print (name)
+  print(ggplot(aes(x = eval(parse(text=name))), data = df)+
+          geom_histogram()+
+          xlab(name)
+        # +
+        #   xlim(quantile(eval(parse(text=paste("df$",trimws(name)))),0.01), quantile(eval(parse(text=paste("df$",trimws(name)))),0.99))
+        )
+}
 
 ```
+
+
+
+
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
 each code block and the end / start of your Markdown text so that it is
@@ -61,6 +105,11 @@ reflect on and summarize what you've found. Use the questions below to help you
 gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
+
+This dataset has 4898 white wine observations with 13 variables in total, including
+index variable x, "quality" variable and 11 porperties of white wines. 
+
+
 
 ### What is/are the main feature(s) of interest in your dataset?
 
