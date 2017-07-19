@@ -81,14 +81,19 @@ summary(df$quality)
 
 
 ```{r}
-ggplot(df,aes(x = quality))+
-  geom_histogram(binwidth = 0.1)+
+# A function to create histogram in the dataset of white wines.
+create_hist <- function(var, binw = NULL, bs = NULL, d = df) {
+  return(ggplot(aes_string(x = var), data = d) +
+           geom_histogram(binwidth = binw, bins = bs))
+}
+
+create_hist('quality',1)+
   scale_x_continuous(breaks = seq(1,10,1))
 ```
 
 I set the binwidth to be 0.1 and the range of quality could be between 0 and 10, 
 0 the worst and 10 the best. We can find there are no wines graded 0, 1, 2 or 10.
-And we can make a table to see if we have any decimals in this varaible.
+And I made a table to see if we have any decimals in this varaible.
 
 ```{r}
 table(df$quality)
@@ -110,12 +115,8 @@ and median are very close and the distribution is very normally distributed.
 
 ```{r}
 summary(df$fixed.acidity)
-# A function to create histogram in the dataset of white wines.
-create_hist <- function(var, binw = 0.1, d = df) {
-  return(ggplot(aes_string(x = var), data = d) +
-           geom_histogram(binwidth = binw))
-}
-create_hist('fixed.acidity')
+
+create_hist('fixed.acidity', bs = 20)
 ```
 
 We can see the range is between 3.8 and 14.2, but there are 50% of the data between
@@ -137,7 +138,7 @@ We can see volatile acidity has small range and so I will set the binwidth to 0.
 
 ```{r}
 # histogram of volatile acidity with bin width of 0.01
-create_hist('volatile.acidity',0.01)
+create_hist('volatile.acidity',bs = 20)
 ```
 
 Though we can recognize it is normally distributed, but the graph is positively 
@@ -145,7 +146,7 @@ skewed and I will plot log scale on x axis.
 
 ```{r}
 # Adjust x axis by log10.
-create_hist('volatile.acidity', binw = 0.01) + scale_x_log10(breaks = seq(0, 1, 0.1))
+create_hist('volatile.acidity', bs= 20) + scale_x_log10(breaks = seq(0, 1, 0.1))
 
 ```
 
@@ -165,11 +166,15 @@ From the statment of data set, I found citric acid has small quantities and can 
 summary(df$citric.acid)
 ```
 
+```{r}
+create_hist('citric.acid', bs = 25)
+```
+
 Found the variable has small range, and so I set the bin widith to 0.01. Since it 
 is positively skewed, I will put square on the x scale.
 
 ```{r}
-create_hist('citric.acid', 0.01) +
+create_hist('citric.acid', bs = 20) +
   scale_x_sqrt(breaks = seq(0, 1.6, .1))
 ```
 
@@ -188,12 +193,17 @@ fermentation stops. Wines with less than 1 gram/litter are rare but with more th
 summary(df$residual.sugar)
 ```
 
+```{r}
+create_hist('residual.sugar',bs = 25)
+```
+
+
 The histogram is positively skewed and so I log the scale of x axis.
 
 ```{r}
 
 # histogram of residual sugar with x axis of log scale
-create_hist('residual.sugar') +
+create_hist('residual.sugar',bs = 25) +
   scale_x_log10(breaks = c(seq(1, 10, 1), seq(20, 60, 10)))
 
 ```
@@ -235,8 +245,8 @@ summary(df$total.sulfur.dioxide)
 
 
 ```{r}
-pfree <- create_hist('free.sulfur.dioxide', 1)
-ptotal <- create_hist('total.sulfur.dioxide', 1)
+pfree <- create_hist('free.sulfur.dioxide', binw = 15)
+ptotal <- create_hist('total.sulfur.dioxide', binw = 20)
 
 grid.arrange(pfree, ptotal)
 
@@ -265,7 +275,7 @@ summary(df$sulphates)
 ```
 ```{r}
 # histogram of sulphates
-create_hist('sulphates', 0.01)
+create_hist('sulphates', 0.05)
 ```
 
 We can see sulphate is normally distributed here.
@@ -284,7 +294,7 @@ We can see we have some wines with ph under 3 but no one exceeds 4.
 
 ```{r}
 # histogram of pH value 
-create_hist('pH', .01)
+create_hist('pH', .1)
 ```
 
 This variable is normally distributed.
@@ -302,8 +312,8 @@ As described in the definition above of density in this data set, it is very clo
 to water depending on its components, alcohol and sugar.
 
 ```{r}
-# histogram of density, since density has very small scale, I set the width of bin to 0.0001
-create_hist('density', 0.0001)
+# histogram of density, since density has very small scale, I set the width of bin to 0.001
+create_hist('density', 0.001)
 ```
 
 We can see except for some with relatively high density,all of the rest concentrating 
@@ -324,7 +334,7 @@ The alcohol has a distribution between 8% and 14%.
 
 ```{r}
 # Histogram of alcohol, manually add breaks marked on the x axis
-create_hist('alcohol') +
+create_hist('alcohol',.5) +
   scale_x_continuous(breaks = seq(0, 15, 0.5))
 ```
 Most wines have the alcohol between 9% and 9.5%, with gradually fewer wines of higher 
@@ -338,8 +348,15 @@ summary(df$chlorides)
 ```
 
 ```{r}
+create_hist('chlorides', .01)
+```
+
+Since the distribution of chlorides has a long tail to the right, I will log the scale
+of x. 
+
+```{r}
 # Histogram of chlorides, since it is skewed right, I adjusted it on x axis.
-create_hist('chlorides', .01) +
+create_hist('chlorides', bs = 20) +
   scale_x_log10(breaks = seq(0, .4, 0.05))
 ```
 
@@ -642,21 +659,20 @@ I split the data into 7 plots, which represents 7 different qualities, 3 to 9, i
 set.
 
 ```{r}
-ggplot(df,aes(x = total.sulfur.dioxide, y = free.sulfur.dioxide))+
-  xlim(quantile(df$total.sulfur.dioxide,0.01),quantile(df$total.sulfur.dioxide,0.99))+
-  ylim(quantile(df$free.sulfur.dioxide,0.01),quantile(df$free.sulfur.dioxide,0.99))+
-  scale_x_sqrt()+
-  scale_y_log10()+
-  geom_point(alpha = 0.2)+
-  facet_wrap(~quality.discrete)
+ggplot(df,
+       aes(x = total.sulfur.dioxide, y = free.sulfur.dioxide)) +
+  xlim(quantile(df$total.sulfur.dioxide, 0.01),
+       quantile(df$total.sulfur.dioxide, 0.99)) +
+  ylim(quantile(df$free.sulfur.dioxide, 0.01),
+       quantile(df$free.sulfur.dioxide, 0.99)) +
+  geom_point(alpha = 0.2) +
+  facet_wrap(~ quality.discrete)
 ```
 
 ```{r}
-ggplot(df,aes(x = alcohol, y = density, color = quality.discrete))+
-  scale_x_sqrt()+
-  scale_y_log10()+
-  geom_point(alpha = 0.2)+
-  facet_wrap(~quality.discrete)
+ggplot(df, aes(x = alcohol, y = density)) +
+  geom_point(alpha = 0.2) +
+  facet_wrap( ~ quality.discrete)
 ```
 
 From the graph above, we can see with the quality increasing, the quality is more 
@@ -683,8 +699,7 @@ hard to have a trend.
 
 ```{r}
 ggplot(df, aes(x = density, y = total.sulfur.dioxide, color = SO2.effect)) +
-  scale_x_continuous(limits = c(.985, 1.01)) + #quantile(df$density,0.01),quantile(df$density,0.99))+
-  # ylim(quantile(df$density,0.01),quantile(df$density,0.99))+
+  scale_x_continuous(limits = c(.985, 1.01)) +
   geom_point() +
   facet_wrap( ~ quality.discrete)
 ```
@@ -721,7 +736,6 @@ see if they have any visiable relationships and then create a model.
 
 ```{r}
 ggplot(df[df$density < quantile(df$density, 0.99) , ], aes(x = alcohol, y = residual.sugar, color = density)) +
-  # ylim(quantile(df$density,0.01),quantile(df$density,0.99))
   geom_point() +
   facet_wrap( ~ quality.discrete) + scale_colour_gradient(low = "green", high = "red")
 ```
@@ -782,9 +796,10 @@ is a good model.
 
 ### Plot One
 ```{r echo=FALSE, Plot_One}
-ggplot(df, aes(x = quality)) +
-  geom_histogram(binwidth = 0.1) +
-  scale_x_continuous(breaks = seq(1, 10, 1))
+create_hist('quality',1) +
+  scale_x_continuous(breaks = seq(1, 10, 1))+
+  ggtitle('Quality of white wines')+
+  labs(y = 'Number of wines', x = 'Level of quality')
 
 ```
 
@@ -796,34 +811,37 @@ samples do not have big size and they may not be representative.
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
+# alcohol vs. quality boxplot
 alcohol <- ggplot(df, aes(x = quality.discrete, y = alcohol)) +
-  geom_boxplot(outlier.colour = 'red', outlier.alpha = 0.2)
-sugar <- ggplot(df, aes(x = quality.discrete, y = residual.sugar)) +
-  geom_boxplot(outlier.colour = 'red', outlier.alpha = 0.2) +
-  ylim(0, 20)
-grid.arrange(alcohol, sugar)
+  geom_boxplot(outlier.colour = 'red', outlier.alpha = 0.2)+
+  ggtitle('Alcohol content and quality')+
+  labs(y = 'Alcohol (% by volume)', x = 'Level of quality')
+
+alcohol
 ```
 
 ### Description Two
-We can see that generally quality of wines increase when alcohol increases. And 
-wines with more sugar will have lower quality as well. However, these trends are 
-not very clear since we still have exceptions in the sample of wines with quality 
-4 and 3.
+We can see that generally quality of wines increase when alcohol increases. However, 
+these trends are not very clear since we still have exceptions in the sample of 
+wines with quality 4 and 3. The medians go down from wines with quality 3 to wines 
+with quality 5.
 
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
 ggplot(df[df$density < quantile(df$density, 0.99) , ], aes(x = alcohol, y = residual.sugar, color = density)) +
-  # ylim(quantile(df$density,0.01),quantile(df$density,0.99))
   geom_point() +
   facet_wrap( ~ quality.discrete) +
-  scale_colour_gradient(low = "green", high = "red")
+  scale_colour_gradient(low = "green", high = "red")+
+  ggtitle('Residul sugar and alcohol in different qualities')+
+  labs(x = 'Alcohol (% by volume)', y = 'Residual sugar((g per dm^3))')
 ```
 
 ### Description Three
 The plots are splitted in qualities. We can find wines with high quality have more 
 alcohol comparing to residual sugar, and wines with lower quality have more sugar
-instead.
+instead. Also, we did not find many wines on the top right. It means wines having 
+high alcohol barely have high sugar. 
 
 
 # Reflection
@@ -832,7 +850,7 @@ instead.
 The data set contains information on 4898 lines across 13 variables. I started by 
 understanding the individual variables in the data set and then I explored bivariated
 plots and find correlations between variabales. Eventually, I explored the quality 
-across multiple variables and created a linear model to predict winte qualities.
+across multiple variables and created a linear model to predict wine qualities.
 
 This data set has 1 index, 1 quality and 11 properties. I was supprised 10 out of 
 11 properties were normally distributed. Every property has some relationship with 
@@ -845,8 +863,17 @@ properties.
 
 Limitations of this model include the source of data. We find the distribution of
 quality is normally distributed. It means the data set does not have enough sample 
-in of wines with lowest quality and highest quality. Also methodology is another 
-limit since from what I observe, quality might not be linearly related to current
-variables. We can have some discriptive summary here, but if we want to go for 
-predictions, we might need to use machine learning which might be more helpful in 
-predictions. 
+in of wines with lowest quality and highest quality. However, I mainly used boxplot 
+to see the range of data and the median for each quality. A general trendo of quality
+could still be found. It is hard to find a linear model between variables and quality.
+
+
+Also methodology is another limit since from what I observe, quality might not be 
+linearly related to current variables. We can have some discriptive summary here, 
+but if we want to go for predictions, we might need to use machine learning which 
+might be more helpful in predictions. However, in terms of density, I successfully
+find out a regression model with low p value and high R square value. Ths model is
+to predict density with residual sugar and alcohol. That makes sense since more alcohol 
+lead to lower density and more sugar lead to high density.
+
+
