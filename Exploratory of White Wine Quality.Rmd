@@ -41,10 +41,10 @@ properties of white wines, including index variables, qualities, density and
 The goal of this project is to understand and analyze this data set. In particular, 
 I will try to find answers of the following three questions:
 
-* Find the typical range and distributino of properties and qualities of wines.
-* Find the properties that most influence qualities of wines.
-* Find relationships between properties and find out if any correlations exist 
-between qualities and properties.
+  * Find the typical range and distribution of properties and qualities of wines.
+  * Find the properties that most influence qualities of wines.
+  * Find relationships between properties and find out if any correlations exist 
+  between qualities and properties.
 
 # Univariate Plots Section
 
@@ -258,7 +258,7 @@ they seem to not have the same distribution. I will discuss more in the next ses
 Since free SO2 will affect nose and taste of wine.I will create a new categorical variable to separate wines which can affect taste with SO2 and the other do not.
 
 ```{r}
-#Add a colmn to record if a wine has SO2 effect
+#Add a column to record if a wine has SO2 effect
 
 df$SO2.effect <- df$free.sulfur.dioxide > 50
 ```
